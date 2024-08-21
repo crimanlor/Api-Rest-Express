@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const users = require('./data/users.text')
 
 const app = express();
 const PORT = 3000;
@@ -19,7 +20,7 @@ app.post("/users", (req, res) => {
     }
 
     const userRecord = `${surnames.toUpperCase()}, ${name.toUpperCase()}\n`;
-    const filePath = path.join(__dirname, 'users.text');
+    const filePath = path.join(__dirname, './data/users.text');
 
     fs.appendFile(filePath, userRecord, (err) => {
         if (err) {
@@ -27,6 +28,20 @@ app.post("/users", (req, res) => {
         }
         res.status(201).json({ message: 'User successfully created.' });
     })
+})
+
+app.get('/users', (req, res) => {
+    const { name, surnames } = req.query;
+    const filePath = path.join(__dirname, './data/users.text');
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'The user file could not be read.' });
+        }
+        const users = data.split('\n').filter(Boolean);
+        res.json(users);
+    })
+
 })
 
 app.listen(PORT, (err) => {
