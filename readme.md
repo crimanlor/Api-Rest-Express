@@ -74,8 +74,8 @@ POST /users
 Content-Type: application/json
 
 {
-  "name": "John",
-  "surnames": "Doe"
+  "name": "Lorena",
+  "surnames": "Criado Gonzalez"
 }
 ```
 
