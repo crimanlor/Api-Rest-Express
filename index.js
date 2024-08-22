@@ -1,26 +1,30 @@
+// Modules
 const express = require('express');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
-const users = require('./data/users.text')
 
+// Express app
 const app = express();
 const PORT = 3000;
- 
+
+// Middlewares
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
 app.use(express.json());
 app.use(morgan('tiny'));
 
+
+// Endpoints
 app.post("/users", (req, res) => {
     const { name, surnames } = req.body
 
     if(!name || !surnames){
-        res.status(400).json({ error: 'Name and surname are required.' });
+        return res.status(400).json({ error: 'Name and surname are required.' });
     }
 
     const userRecord = `${surnames.toUpperCase()}, ${name.toUpperCase()}\n`;
-    const filePath = path.join(__dirname, './data/users.text');
+    const filePath = path.join(__dirname, './data/users.txt');
 
     fs.appendFile(filePath, userRecord, (err) => {
         if (err) {
@@ -32,14 +36,33 @@ app.post("/users", (req, res) => {
 
 app.get('/users', (req, res) => {
     const { name, surnames } = req.query;
-    const filePath = path.join(__dirname, './data/users.text');
+    const filePath = path.join(__dirname, './data/users.txt');
 
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
             return res.status(500).json({ error: 'The user file could not be read.' });
         }
-        const users = data.split('\n').filter(Boolean);
-        res.json(users);
+
+        const users = data.split('\n').filter(line => line.trim() !== '');
+
+        if (!name && !surnames) {
+            return res.json(users);
+        }
+
+        const nameQuery = name ? name.toLowerCase() : '';
+        const surnamesQuery = surnames ? surnames.toLowerCase() : '';
+
+        const filteredUsers = users.filter(user => {
+            const parts = user.split(', ');
+            if (parts.length !== 2) return false;
+                const [userSurnames, userName] = parts;
+                const matchesName = nameQuery ? userName.toLowerCase().includes(nameQuery) : true;
+            const matchesSurnames = surnamesQuery ? userSurnames.toLowerCase().includes(surnamesQuery) : true;
+                return matchesName && matchesSurnames;
+        });
+
+        res.json(filteredUsers)
+
     })
 
 })
