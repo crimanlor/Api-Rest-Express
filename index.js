@@ -1,21 +1,41 @@
-// Modules
+/**
+ * Modules
+ */
 const express = require('express');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 
-// Express app
+/**
+ * Express app
+ */
 const app = express();
 const PORT = 3000;
 
-// Middlewares
+/**
+ * Middlewares
+ */
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
 app.use(express.json());
 app.use(morgan('tiny'));
 
 
-// Endpoints
+/**
+ * Endpoints
+ */
+
+/**
+ * POST /users
+ * 
+ * Adds a new user to the system by appending the user's name and surnames to the users.txt file.
+ * 
+ * @route POST /users
+ * @param {string} req.body.name - The name of the user to be added.
+ * @param {string} req.body.surnames - The surnames of the user to be added.
+ * @returns {object} JSON response indicating success or failure of user creation.
+ */
+
 app.post("/users", (req, res) => {
     const { name, surnames } = req.body
 
@@ -33,6 +53,18 @@ app.post("/users", (req, res) => {
         res.status(201).json({ message: 'User successfully created.' });
     })
 })
+
+/**
+ * GET /users
+ * 
+ * Retrieves a list of users from the users.txt file. Users can be filtered by name or surnames.
+ * If no filters are provided, all users will be returned.
+ * 
+ * @route GET /users
+ * @param {string} [req.query.name] - Optional query parameter to filter users by name.
+ * @param {string} [req.query.surnames] - Optional query parameter to filter users by surnames.
+ * @returns {array} JSON response containing the list of users or filtered users.
+ */
 
 app.get('/users', (req, res) => {
     const { name, surnames } = req.query;
@@ -66,6 +98,11 @@ app.get('/users', (req, res) => {
     })
 
 })
+
+/**
+ * Starts the server and listens on the specified port.
+ * Logs an error message if the server fails to start.
+ */
 
 app.listen(PORT, (err) => {
     if (err) console.log("Error in server setup")
